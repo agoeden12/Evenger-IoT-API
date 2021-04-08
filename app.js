@@ -1,14 +1,12 @@
 var express = require("express");
 var app = express();
-var mongoose = require("mongoose");
-mongoose.connect('mongodb://localhost/Voltron');
 var createError = require("http-errors");
+var mongoose = require("mongoose");
+mongoose.connect("mongodb://localhost/Voltron");
 
+var Point = require("./schema/Point");
 var Session = require("./schema/Session");
 const currentSession = new Session();
-
-// var Point = require("./schema/Point");
-
 
 app.all("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -34,13 +32,10 @@ app.use(express.urlencoded({ extended: false }));
 // });
 
 app.post("/initialize", (req, res) => {
-
   currentSession.initialVoltage = 100;
   currentSession.save();
 
-  res
-    .status(200)
-    .send(currentSession);
+  res.status(200).send(currentSession);
 });
 
 app.get("/currentSession", (req, res) => {
@@ -48,6 +43,26 @@ app.get("/currentSession", (req, res) => {
     res.status(200).send(currentSession._id);
   } else {
     res.status(500).send("Current Session has not been initialized."); //edge case that should never execute
+  }
+});
+
+app.post("/addPoint", (req, res) => {
+  var body = req.body;
+  var point = new Point({
+    voltage: body.voltage,
+    batteryTemp: body.batteryTemp,
+    motorControllerTemp: body.motorControllerTemp,
+  });
+
+  const error = point.validateSync();
+  if (error) {
+    console.log(error);
+    return res.status(500).send(error.name);
+  } else {
+    currentSession.data.push(point);
+
+    currentSession.save();
+    res.status(200).send(currentSession.data);
   }
 });
 
