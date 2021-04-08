@@ -5,12 +5,10 @@ mongoose.connect('mongodb://localhost/Voltron');
 var createError = require("http-errors");
 
 var Session = require("./schema/Session");
+const currentSession = new Session();
+
 // var Point = require("./schema/Point");
 
-var date = new Date();
-var day = date.toLocaleDateString("en-US", {timeZone: "America/New_York"});
-var time = date.toLocaleTimeString("en-US", { hour12: false });
-const currentSession = new Session();
 
 app.all("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -37,13 +35,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.post("/initialize", (req, res) => {
 
-  currentSession.date = date;
-  currentSession.startDay = day;
-  currentSession.startTime = time;
   currentSession.initialVoltage = 100;
-  currentSession.data = [];
-
   currentSession.save();
+
   res
     .status(200)
     .send(currentSession);
