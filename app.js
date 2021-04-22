@@ -5,7 +5,7 @@ var evengerSocket = expressWs.getWss();
 
 var createError = require("http-errors");
 var mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/Voltron");
+mongoose.connect("mongodb://localhost/evenger");
 
 var Point = require("./schema/Point");
 var Session = require("./schema/Session");
