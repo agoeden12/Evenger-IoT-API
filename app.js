@@ -1,5 +1,8 @@
 var express = require("express");
 var app = express();
+var expressWs = require("express-ws")(app);
+var evengerSocket = expressWs.getWss();
+
 var createError = require("http-errors");
 var mongoose = require("mongoose");
 mongoose.connect("mongodb://localhost/Voltron");
@@ -21,16 +24,6 @@ app.all("/*", function (req, res, next) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// app.get("/test", (req, res) => {
-//   res
-//     .status(200)
-//     .json({
-//       title: "Test Working",
-//       body: "the template is good so far",
-//     })
-//     .send();
-// });
-
 app.post("/initialize", (req, res) => {
   currentSession.initialVoltage = 100;
   currentSession.save();
@@ -46,29 +39,43 @@ app.get("/currentSession", (req, res) => {
   }
 });
 
-app.post("/addPoint", (req, res) => {
-  var body = req.body;
-  var point = new Point({
-    voltage: body.voltage,
-    batteryTemp: body.batteryTemp,
-    motorControllerTemp: body.motorControllerTemp,
+// evengerSocket.on("connection", () => {
+//   console.log("connected");
+// })
+
+app.ws("/point", function (ws) {
+  ws.on("message", (msg) => {
+    if (addPoint(JSON.parse(msg))) {
+      evengerSocket.clients.forEach((client) => {
+        client.send(msg);
+      });
+    }
   });
-
-  const error = point.validateSync();
-  if (error) {
-    console.log(error);
-    return res.status(500).send(error.name);
-  } else {
-    currentSession.data.push(point);
-
-    currentSession.save();
-    res.status(200).send(currentSession.data);
-  }
 });
 
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
+function addPoint(body) {
+  var point = new Point({
+    voltage: body.voltage,
+    current: body.current,
+    highestCell: body.highestCell,
+    lowestCell: body.lowestCell,
+    averageCell: body.averageCell,
+  });
+
+  const error = point.validateSync();
+  if (error) {
+    console.log(error);
+    return false;
+  } else {
+    currentSession.data.push(point);
+    currentSession.save();
+    return true;
+  }
+}
 
 app.listen(5000, function () {
   console.log("Voltron API running on port 5000...");
