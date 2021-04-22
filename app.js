@@ -5,7 +5,7 @@ var evengerSocket = expressWs.getWss();
 
 var createError = require("http-errors");
 var mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/evenger");
+mongoose.connect("mongodb://localhost/evenger", {useNewUrlParser: true, useUnifiedTopology: true});
 
 var Point = require("./schema/Point");
 var Session = require("./schema/Session");
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.post("/initialize", (req, res) => {
-  currentSession.initialVoltage = 100;
+  currentSession.initialVoltage = req.body.initialVoltage;
   currentSession.save();
 
   res.status(200).send(currentSession);
@@ -72,7 +72,10 @@ function addPoint(body) {
     return false;
   } else {
     currentSession.data.push(point);
-    currentSession.save();
+    currentSession.save().then(result => {
+    }).catch((err) => {
+      // console.log(err);
+    });
     return true;
   }
 }
