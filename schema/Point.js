@@ -7,8 +7,12 @@ var point = new Schema({
     day: {type: String, default: day},
     time: {type: String, default: time},
     voltage: {type: Number, required: true},
-    batteryTemp: {type: Number, required: true},
-    motorControllerTemp: {type: Number, required: true}
+    current: {type: Number, required: true},
+    highestCell: {type: Number, required: true},
+    lowestCell: {type: Number, required: true},
+    averageCell: {type: Number, required: true},
+    batteryTemp: {type: Number, required: false},
+    motorControllerTemp: {type: Number, required: false}
 });
 
 module.exports = mongoose.model('Point', point);
