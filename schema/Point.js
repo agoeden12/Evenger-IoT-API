@@ -1,11 +1,11 @@
 var mongoose = require('mongoose'), Schema = mongoose.Schema;
-var date = new Date();
-var day = date.toLocaleDateString("en-US", {timeZone: "America/New_York"});
-var time = date.toLocaleTimeString("en-US", { hour12: false });
+// var date = new Date();
+// var day = date.toLocaleDateString("en-US", {timeZone: "America/New_York"});
+// var time = date.toLocaleTimeString("en-US", { hour12: false });
 
 var point = new Schema({
-    day: {type: String, default: day},
-    time: {type: String, default: time},
+    day: {type: String, required: true},
+    time: {type: String, required: true},
     voltage: {type: Number, required: true},
     current: {type: Number, required: true},
     highestCell: {type: Number, required: true},

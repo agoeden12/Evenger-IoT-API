@@ -5,7 +5,10 @@ var evengerSocket = expressWs.getWss();
 
 var createError = require("http-errors");
 var mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/evenger", {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect("mongodb://localhost/evenger", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 var Point = require("./schema/Point");
 var Session = require("./schema/Session");
@@ -39,17 +42,17 @@ app.get("/currentSession", (req, res) => {
   }
 });
 
-// evengerSocket.on("connection", () => {
-//   console.log("connected");
-// })
+app.get("/sessionPoints", (req, res) => {
+  res.status(200).send(currentSession.data)
+})
 
 app.ws("/point", function (ws) {
-  ws.on("message", (msg) => {
-    if (addPoint(JSON.parse(msg))) {
+  ws.on("message", async (msg) => {
+    await addPoint(JSON.parse(msg)).then((point) => {
       evengerSocket.clients.forEach((client) => {
-        client.send(msg);
+        client.send(JSON.stringify(point));
       });
-    }
+    });
   });
 });
 
@@ -57,8 +60,14 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
-function addPoint(body) {
+async function addPoint(body) {
+  var date = new Date();
+  var day = date.toLocaleDateString("en-US", { timeZone: "America/New_York" });
+  var time = date.toLocaleTimeString("en-US", { hour12: false });
+
   var point = new Point({
+    day: day,
+    time: time,
     voltage: body.voltage,
     current: body.current,
     highestCell: body.highestCell,
@@ -69,14 +78,13 @@ function addPoint(body) {
   const error = point.validateSync();
   if (error) {
     console.log(error);
-    return false;
+    return body;
   } else {
     currentSession.data.push(point);
-    currentSession.save().then(result => {
-    }).catch((err) => {
+    currentSession.save().catch((err) => {
       // console.log(err);
     });
-    return true;
+    return point;
   }
 }
 
