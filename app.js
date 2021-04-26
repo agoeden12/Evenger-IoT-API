@@ -88,7 +88,7 @@ async function addPoint(body) {
   }
 }
 
-app.listen(5000, function () {
+app.listen(5000, "0.0.0.0", function () {
   console.log("Voltron API running on port 5000...");
 });
 
