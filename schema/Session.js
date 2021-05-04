@@ -3,6 +3,7 @@ var date = new Date();
 var day = date.toLocaleDateString("en-US", {timeZone: "America/New_York"});
 var time = date.toLocaleTimeString("en-US", { hour12: false });
 
+// This is the schema to properly structure the data for each session to prevent any data corruption or inconsistencies
 var session = new Schema({
     date: {type: Date, default: date},
     startDay: {type: String, default: day},

@@ -1,8 +1,6 @@
 var mongoose = require('mongoose'), Schema = mongoose.Schema;
-// var date = new Date();
-// var day = date.toLocaleDateString("en-US", {timeZone: "America/New_York"});
-// var time = date.toLocaleTimeString("en-US", { hour12: false });
 
+// This is the schema to properly structure the data for each data point to prevent any data corruption or inconsistencies
 var point = new Schema({
     day: {type: String, required: true},
     time: {type: String, required: true},
